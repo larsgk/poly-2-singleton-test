@@ -1,0 +1,30 @@
+<link rel="import" href="bower_components/polymer/polymer-element.html">
+<link rel="import" href="singleton-mixin.html">
+
+<dom-module id="my-element">
+  <template>
+    <div>[[name]] reads the shared counter as: [[data.val]]</div>
+  </template>
+
+  <script>
+
+    class MyElement extends SingletonMixin(Polymer.Element) {
+      static get is() { return 'my-element' }
+
+      static get config() {
+        return {
+          properties: {
+            name: String
+          }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+      }
+    }
+
+    customElements.define(MyElement.is, MyElement);
+
+  </script>
+</dom-module>

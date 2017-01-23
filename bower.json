@@ -1,0 +1,7 @@
+{
+  "name": "poly-2-singleton-test",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#2.0-preview"
+  }
+}

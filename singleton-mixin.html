@@ -1,0 +1,28 @@
+<script>
+  let _globalData = {val:0};
+  let _listeners = [];
+
+  window.setInterval(_ => {
+    _globalData.val++;
+    _listeners.forEach(instance => instance.notifyPath('data'));
+  }, 1000);
+
+  const SingletonMixin = subclass => class extends subclass {
+    static get config() {
+      return {
+        properties: {
+          data: {
+            type: Object,
+            value: _globalData
+          }
+        }
+      };
+    }
+
+    connectedCallback() {
+      _listeners.push(this);
+      super.connectedCallback();
+    }
+  };
+
+</script>
