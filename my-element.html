@@ -1,9 +1,11 @@
 <link rel="import" href="bower_components/polymer/polymer-element.html">
 <link rel="import" href="singleton-mixin.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+
 
 <dom-module id="my-element">
   <template>
-    <div>[[name]] reads the shared counter as: [[data.val]]</div>
+    <div>[[name]] reads the shared counter as: [[data.val]] <paper-button on-tap="reset">reset</paper-button></div>
   </template>
 
   <script>

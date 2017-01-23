@@ -23,6 +23,11 @@
       _listeners.push(this);
       super.connectedCallback();
     }
+
+    reset() {
+      this.data.val = 0;
+      _listeners.forEach(instance => instance.notifyPath('data'));
+    }
   };
 
 </script>
