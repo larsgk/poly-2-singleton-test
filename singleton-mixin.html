@@ -1,11 +1,42 @@
 <script>
-  let _globalData = {val:0};
-  let _listeners = [];
+  const dataSymbol = Symbol("_SINGLETON_DATA");
+  const instanceSymbol = Symbol("_SINGLETON_LISTENERS");
+
+  const hwstates = [
+    "not connected",
+    "connected",
+    "initialized",
+    "running"
+  ];
+
+  Object.defineProperty(window, dataSymbol, {  
+    value: {
+      counter: 0,
+      hwstate: hwstates[0]
+    },
+    writable: false,
+    enumerable: false,
+    configurable: false
+  });
+
+  Object.defineProperty(window, instanceSymbol, {  
+    value: [],
+    writable: false,
+    enumerable: false,
+    configurable: false
+  });
+
+  // Emulate data coming from some hardware (e.g)
+  window.setInterval(_ => {
+    window[dataSymbol].counter++;
+    window[instanceSymbol].forEach(instance => instance.notifyPath('data.counter'));
+  }, 1000);
 
   window.setInterval(_ => {
-    _globalData.val++;
-    _listeners.forEach(instance => instance.notifyPath('data'));
-  }, 1000);
+    window[dataSymbol].hwstate = hwstates[Math.floor(4*Math.random())];
+    window[instanceSymbol].forEach(instance => instance.notifyPath('data.hwstate'));
+  }, 1500);
+
 
   const SingletonMixin = subclass => class extends subclass {
     static get config() {
@@ -13,21 +44,31 @@
         properties: {
           data: {
             type: Object,
-            value: _globalData
+            value: window[dataSymbol]
           }
         }
       };
     }
 
     connectedCallback() {
-      _listeners.push(this);
       super.connectedCallback();
+      window[instanceSymbol].push(this);
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      var i = window[instanceSymbol].indexOf(this);
+      if (i >= 0) {
+          window[instanceSymbol].splice(i, 1);
+      }
     }
 
     reset() {
-      this.data.val = 0;
-      _listeners.forEach(instance => instance.notifyPath('data'));
+      this.data.counter = 0;
+      this.data.hwstate = hwstates[0];
+      window[instanceSymbol].forEach(instance => instance.notifyPath('data'));
     }
   };
+
 
 </script>

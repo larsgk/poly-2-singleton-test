@@ -1,0 +1,55 @@
+<link rel="import" href="bower_components/polymer/polymer-element.html">
+<link rel="import" href="singleton-mixin.html">
+
+<dom-module id="my-hwindicator">
+  <template>
+    <style>
+      div {
+        width: 3em;
+        height: 3em;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+        background-color: transparent;
+      }
+    </style>
+    
+    <div id="led"></div>
+    [[_stateString(data.hwstate)]]
+    
+  </template>
+
+  <script>
+
+    class MyHwindicator extends SingletonMixin(Polymer.Element) {
+      static get is() { return 'my-hwindicator' }
+
+      static get config() {
+        return {
+          observers: ['_hwstateChanged(data.hwstate)']
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+      }
+
+      _hwstateChanged(state) {
+        if(state === "not connected")
+          this.$.led.style.backgroundColor = 'transparent';
+        else if(state === "connected")
+          this.$.led.style.backgroundColor = 'red';
+        else if(state === "initialized")
+          this.$.led.style.backgroundColor = 'yellow';
+        else if(state === "running")
+          this.$.led.style.backgroundColor = 'green';
+      }
+
+      _stateString(state) {
+        return state.toUpperCase();
+      }
+    }
+
+    customElements.define(MyHwindicator.is, MyHwindicator);
+
+  </script>
+</dom-module>

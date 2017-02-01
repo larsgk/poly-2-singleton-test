@@ -5,7 +5,7 @@
 
 <dom-module id="my-element">
   <template>
-    <div>[[name]] reads the shared counter as: [[data.val]] <paper-button on-tap="reset">reset</paper-button></div>
+    <div>[[name]] reads the shared counter as: [[data.counter]] - HW state: ([[data.hwstate]]) <paper-button raised on-tap="reset">reset</paper-button></div>
   </template>
 
   <script>
