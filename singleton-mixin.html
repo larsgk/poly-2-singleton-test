@@ -1,7 +1,4 @@
 <script>
-  const dataSymbol = Symbol("_SINGLETON_DATA");
-  const instanceSymbol = Symbol("_SINGLETON_LISTENERS");
-
   const hwstates = [
     "not connected",
     "connected",
@@ -9,7 +6,47 @@
     "running"
   ];
 
-  Object.defineProperty(window, dataSymbol, {  
+
+const SingletonMixin = (_ => {
+  const _SingletonMixin = subclass => class extends subclass {
+      static get config() {
+      return {
+        properties: {
+          data: {
+            type: Object,
+            value: _SingletonMixin["data"],
+          }
+        },
+        observers: [ 'dataChanged(data)' ]
+      }
+    }
+
+    dataChanged(data) {
+      _SingletonMixin.notifyPath('data');
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      _SingletonMixin["instances"].push(this);
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      var i = _SingletonMixin["instances"].indexOf(this);
+      if (i >= 0) {
+          _SingletonMixin["instances"].splice(i, 1);
+      }
+    }
+
+    reset() {
+      this.data.counter = 0;
+      this.data.hwstate = hwstates[0];
+      this.notifyPath('data');
+      _SingletonMixin["instances"].forEach(instance => instance.notifyPath('data'));
+    }
+  };
+
+  Object.defineProperty(_SingletonMixin, "data", {
     value: {
       counter: 0,
       hwstate: hwstates[0]
@@ -18,57 +55,32 @@
     enumerable: false,
     configurable: false
   });
-
-  Object.defineProperty(window, instanceSymbol, {  
+  Object.defineProperty(_SingletonMixin, "instances", {
     value: [],
     writable: false,
     enumerable: false,
     configurable: false
   });
 
-  // Emulate data coming from some hardware (e.g)
+  _SingletonMixin.notifyPath = function(path) {
+    _SingletonMixin["instances"].forEach(instance => instance.notifyPath(path))
+  }
+
+
+// Emulate data coming from some hardware (e.g)
   window.setInterval(_ => {
-    window[dataSymbol].counter++;
-    window[instanceSymbol].forEach(instance => instance.notifyPath('data.counter'));
+    _SingletonMixin["data"].counter++;
+    _SingletonMixin.notifyPath('data.counter');
   }, 1000);
 
   window.setInterval(_ => {
-    window[dataSymbol].hwstate = hwstates[Math.floor(4*Math.random())];
-    window[instanceSymbol].forEach(instance => instance.notifyPath('data.hwstate'));
+    _SingletonMixin["data"].hwstate = hwstates[Math.floor(4*Math.random())];
+    _SingletonMixin.notifyPath('data.hwstate');
   }, 1500);
 
 
-  const SingletonMixin = subclass => class extends subclass {
-    static get config() {
-      return {
-        properties: {
-          data: {
-            type: Object,
-            value: window[dataSymbol]
-          }
-        }
-      };
-    }
 
-    connectedCallback() {
-      super.connectedCallback();
-      window[instanceSymbol].push(this);
-    }
-
-    disconnectedCallback() {
-      super.disconnectedCallback();
-      var i = window[instanceSymbol].indexOf(this);
-      if (i >= 0) {
-          window[instanceSymbol].splice(i, 1);
-      }
-    }
-
-    reset() {
-      this.data.counter = 0;
-      this.data.hwstate = hwstates[0];
-      window[instanceSymbol].forEach(instance => instance.notifyPath('data'));
-    }
-  };
-
+  return _SingletonMixin;
+})();
 
 </script>
